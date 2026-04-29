@@ -113,9 +113,19 @@ class PreflightViewModel(
     fun createBroadcast() {
         val currentState = uiState.value
         val currentResult = currentState.result ?: return
-        val duplicatePolicy = currentState.duplicatePolicy ?: return
-        val invalidNumberPolicy = currentState.invalidNumberPolicy ?: return
         if (!currentState.canLaunch) return
+        val duplicatePolicy = currentState.duplicatePolicy
+            ?: if (currentResult.duplicateIssues.isEmpty()) {
+                DuplicatePolicy.NONE
+            } else {
+                return
+            }
+        val invalidNumberPolicy = currentState.invalidNumberPolicy
+            ?: if (currentResult.invalidNumberIssues.isEmpty()) {
+                InvalidNumberPolicy.NONE
+            } else {
+                return
+            }
 
         viewModelScope.launch {
             val broadcastId = broadcastCreator.create(
