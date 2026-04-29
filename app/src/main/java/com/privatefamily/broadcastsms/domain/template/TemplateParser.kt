@@ -1,6 +1,6 @@
 package com.privatefamily.broadcastsms.domain.template
 
-private val tokenRegex = "\\{([A-Za-z][A-Za-z0-9]*)}".toRegex()
+private val tokenRegex = "\\{([A-Za-z][A-Za-z0-9]*)\\}".toRegex()
 
 data class TemplateParseResult(
     val tokens: Set<String>,
