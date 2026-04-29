@@ -40,6 +40,7 @@ fun ListsScreen(
     val lists by viewModel.lists.collectAsStateWithLifecycle()
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
     var renameTarget by remember { mutableStateOf<DistributionListEntity?>(null) }
+    var deleteTarget by remember { mutableStateOf<DistributionListEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -63,6 +64,13 @@ fun ListsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (lists.isEmpty()) {
+                item {
+                    SectionCard(title = "No Lists Yet") {
+                        Text("Create your first distribution list to start building broadcast recipients.")
+                    }
+                }
+            }
             items(lists, key = { it.id }) { list ->
                 SectionCard(
                     title = list.name,
@@ -70,7 +78,7 @@ fun ListsScreen(
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { renameTarget = list }) { Text("Rename") }
-                        TextButton(onClick = { viewModel.deleteList(list.id) }) { Text("Delete") }
+                        TextButton(onClick = { deleteTarget = list }) { Text("Delete") }
                         TextButton(onClick = { onListSelected(list.id) }) { Text("Open") }
                     }
                 }
@@ -102,6 +110,31 @@ fun ListsScreen(
                     viewModel.renameList(target.id, it)
                 }
                 renameTarget = null
+            },
+        )
+    }
+
+    deleteTarget?.let { target ->
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            title = { Text("Delete List") },
+            text = {
+                Text("Delete ${target.name}? Broadcast history stays intact, but this list and its members will be removed.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteList(target.id)
+                        deleteTarget = null
+                    },
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteTarget = null }) {
+                    Text("Cancel")
+                }
             },
         )
     }

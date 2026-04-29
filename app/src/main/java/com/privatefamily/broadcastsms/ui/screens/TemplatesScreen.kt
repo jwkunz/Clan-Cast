@@ -45,6 +45,7 @@ fun TemplatesScreen(
     val templates by viewModel.templates.collectAsStateWithLifecycle()
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
     var editTarget by remember { mutableStateOf<MessageTemplateEntity?>(null) }
+    var deleteTarget by remember { mutableStateOf<MessageTemplateEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -73,11 +74,18 @@ fun TemplatesScreen(
             }
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (templates.isEmpty()) {
+                    item {
+                        SectionCard(title = "No Templates Yet") {
+                            Text("Create a reusable template here, or type a custom message directly when composing a broadcast.")
+                        }
+                    }
+                }
                 items(templates, key = { it.id }) { template ->
                     SectionCard(title = template.name) {
                         Text(template.body)
                         TextButton(onClick = { editTarget = template }) { Text("Edit") }
-                        TextButton(onClick = { viewModel.deleteTemplate(template) }) { Text("Delete") }
+                        TextButton(onClick = { deleteTarget = template }) { Text("Delete") }
                     }
                 }
             }
@@ -104,6 +112,31 @@ fun TemplatesScreen(
             onSave = { name, body ->
                 viewModel.updateTemplate(template, name, body)
                 editTarget = null
+            },
+        )
+    }
+
+    deleteTarget?.let { template ->
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            title = { Text("Delete Template") },
+            text = {
+                Text("Delete ${template.name}? Existing broadcast history will stay saved, but this template will no longer be available for new drafts.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteTemplate(template)
+                        deleteTarget = null
+                    },
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteTarget = null }) {
+                    Text("Cancel")
+                }
             },
         )
     }
