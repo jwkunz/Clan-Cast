@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.privatefamily.broadcastsms.data.model.DistributionListMemberEntity
 import com.privatefamily.broadcastsms.data.model.DuplicatePolicy
 import com.privatefamily.broadcastsms.data.model.InvalidNumberPolicy
+import com.privatefamily.broadcastsms.data.repository.BroadcastRepository
 import com.privatefamily.broadcastsms.data.repository.DistributionListRepository
 import com.privatefamily.broadcastsms.domain.preflight.BroadcastDraftStore
+import com.privatefamily.broadcastsms.domain.preflight.BroadcastCreator
 import com.privatefamily.broadcastsms.domain.preflight.PreflightRequest
 import com.privatefamily.broadcastsms.domain.preflight.PreflightResult
 import com.privatefamily.broadcastsms.domain.preflight.PreflightValidator
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class PreflightUiState(
     val listId: String? = null,
@@ -27,6 +30,7 @@ data class PreflightUiState(
     val duplicatePolicy: DuplicatePolicy? = null,
     val invalidNumberPolicy: InvalidNumberPolicy? = null,
     val result: PreflightResult? = null,
+    val createdBroadcastId: String? = null,
 ) {
     val launchCap = 50
 
@@ -60,6 +64,7 @@ data class PreflightUiState(
 class PreflightViewModel(
     private val draftStore: BroadcastDraftStore,
     private val distributionListRepository: DistributionListRepository,
+    private val broadcastCreator: BroadcastCreator,
     private val validator: PreflightValidator = PreflightValidator(),
 ) : ViewModel() {
     private val policies = MutableStateFlow(PreflightPolicies())
@@ -89,6 +94,7 @@ class PreflightViewModel(
             duplicatePolicy = selectedPolicies.duplicatePolicy,
             invalidNumberPolicy = selectedPolicies.invalidNumberPolicy,
             result = result,
+            createdBroadcastId = selectedPolicies.createdBroadcastId,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -103,21 +109,46 @@ class PreflightViewModel(
     fun selectInvalidNumberPolicy(policy: InvalidNumberPolicy) {
         policies.update { it.copy(invalidNumberPolicy = policy) }
     }
+
+    fun createBroadcast() {
+        val currentState = uiState.value
+        val currentResult = currentState.result ?: return
+        val duplicatePolicy = currentState.duplicatePolicy ?: return
+        val invalidNumberPolicy = currentState.invalidNumberPolicy ?: return
+        if (!currentState.canLaunch) return
+
+        viewModelScope.launch {
+            val broadcastId = broadcastCreator.create(
+                draft = draftStore.draft.value,
+                preflightResult = currentResult,
+                duplicatePolicyName = duplicatePolicy.name,
+                invalidNumberPolicyName = invalidNumberPolicy.name,
+            )
+            policies.update { it.copy(createdBroadcastId = broadcastId) }
+        }
+    }
+
+    fun consumeCreatedBroadcast() {
+        policies.update { it.copy(createdBroadcastId = null) }
+    }
 }
 
 private data class PreflightPolicies(
     val duplicatePolicy: DuplicatePolicy? = null,
     val invalidNumberPolicy: InvalidNumberPolicy? = null,
+    val createdBroadcastId: String? = null,
 )
 
 class PreflightViewModelFactory(
     private val draftStore: BroadcastDraftStore,
     private val distributionListRepository: DistributionListRepository,
+    private val broadcastRepository: BroadcastRepository,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return PreflightViewModel(
             draftStore = draftStore,
             distributionListRepository = distributionListRepository,
+            broadcastCreator = BroadcastCreator(broadcastRepository),
         ) as T
     }
 }

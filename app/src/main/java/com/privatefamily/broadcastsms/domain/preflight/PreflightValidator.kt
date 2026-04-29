@@ -135,7 +135,12 @@ class PreflightValidator(
             PreflightRecipient(
                 distributionListMemberId = member.id,
                 displayName = member.displayName,
+                firstName = member.firstName,
+                lastName = member.lastName,
+                relationship = member.relationship,
+                nickname = member.nickname,
                 phoneNumber = member.selectedPhoneNumber,
+                normalizedPhoneNumber = member.normalizedPhoneNumber,
                 renderedMessage = templateRenderer.render(
                     template = messageBody,
                     input = member.asRenderInput(),

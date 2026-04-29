@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,9 +28,16 @@ import com.privatefamily.broadcastsms.ui.viewmodel.PreflightViewModel
 fun PreflightScreen(
     viewModel: PreflightViewModel,
     onBack: () -> Unit,
+    onBroadcastCreated: (String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val result = uiState.result
+
+    LaunchedEffect(uiState.createdBroadcastId) {
+        val broadcastId = uiState.createdBroadcastId ?: return@LaunchedEffect
+        onBroadcastCreated(broadcastId)
+        viewModel.consumeCreatedBroadcast()
+    }
 
     Scaffold(
         topBar = {
@@ -155,11 +163,11 @@ fun PreflightScreen(
                         }
                     }
                     Button(
-                        onClick = { },
+                        onClick = viewModel::createBroadcast,
                         enabled = uiState.canLaunch,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Broadcast Creation Coming Next")
+                        Text("Create Broadcast Snapshot")
                     }
                 }
             }

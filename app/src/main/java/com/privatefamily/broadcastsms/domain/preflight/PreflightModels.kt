@@ -19,7 +19,12 @@ data class PreflightRequest(
 data class PreflightRecipient(
     val distributionListMemberId: String,
     val displayName: String,
+    val firstName: String?,
+    val lastName: String?,
+    val relationship: String?,
+    val nickname: String?,
     val phoneNumber: String,
+    val normalizedPhoneNumber: String?,
     val renderedMessage: String,
 )
 

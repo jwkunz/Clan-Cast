@@ -31,6 +31,7 @@ class ClanCastApp : Application() {
             ),
             templateRepository = TemplateRepository(database.messageTemplateDao()),
             broadcastRepository = BroadcastRepository(
+                database = database,
                 broadcastDao = database.broadcastDao(),
                 recipientDao = database.broadcastRecipientDao(),
             ),

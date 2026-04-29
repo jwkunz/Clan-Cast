@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.privatefamily.broadcastsms.AppContainer
 import com.privatefamily.broadcastsms.ui.screens.ComposeBroadcastScreen
 import com.privatefamily.broadcastsms.ui.screens.ContactPickerScreen
+import com.privatefamily.broadcastsms.ui.screens.BroadcastDetailScreen
 import com.privatefamily.broadcastsms.ui.screens.HistoryScreen
 import com.privatefamily.broadcastsms.ui.screens.HomeScreen
 import com.privatefamily.broadcastsms.ui.screens.ListDetailScreen
@@ -18,8 +19,12 @@ import com.privatefamily.broadcastsms.ui.screens.PreflightScreen
 import com.privatefamily.broadcastsms.ui.screens.TemplatesScreen
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModelFactory
+import com.privatefamily.broadcastsms.ui.viewmodel.BroadcastDetailViewModel
+import com.privatefamily.broadcastsms.ui.viewmodel.BroadcastDetailViewModelFactory
 import com.privatefamily.broadcastsms.ui.viewmodel.ComposeBroadcastViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ComposeBroadcastViewModelFactory
+import com.privatefamily.broadcastsms.ui.viewmodel.HistoryViewModel
+import com.privatefamily.broadcastsms.ui.viewmodel.HistoryViewModelFactory
 import com.privatefamily.broadcastsms.ui.viewmodel.ListDetailViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ListDetailViewModelFactory
 import com.privatefamily.broadcastsms.ui.viewmodel.ListsViewModel
@@ -118,15 +123,40 @@ fun ClanCastNavHost(
                 factory = PreflightViewModelFactory(
                     draftStore = container.broadcastDraftStore,
                     distributionListRepository = container.distributionListRepository,
+                    broadcastRepository = container.broadcastRepository,
                 ),
             )
             PreflightScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
+                onBroadcastCreated = { navController.navigate(Routes.broadcastDetail(it)) },
             )
         }
         composable(Routes.History) {
-            HistoryScreen(onBack = { navController.popBackStack() })
+            val viewModel: HistoryViewModel = viewModel(
+                factory = HistoryViewModelFactory(container.broadcastRepository),
+            )
+            HistoryScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onBroadcastSelected = { navController.navigate(Routes.broadcastDetail(it)) },
+            )
+        }
+        composable(
+            route = "${Routes.BroadcastDetail}/{broadcastId}",
+            arguments = listOf(navArgument("broadcastId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val broadcastId = backStackEntry.arguments?.getString("broadcastId").orEmpty()
+            val viewModel: BroadcastDetailViewModel = viewModel(
+                factory = BroadcastDetailViewModelFactory(
+                    broadcastId = broadcastId,
+                    repository = container.broadcastRepository,
+                ),
+            )
+            BroadcastDetailScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+            )
         }
     }
 }
