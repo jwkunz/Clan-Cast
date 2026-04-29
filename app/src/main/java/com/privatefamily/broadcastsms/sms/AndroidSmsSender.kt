@@ -20,7 +20,7 @@ class AndroidSmsSender(
             withTimeoutOrNull(SEND_TIMEOUT_MS) {
                 suspendCancellableCoroutine { continuation ->
                     val callbackId = "$recipientId-${UUID.randomUUID()}"
-                    val messageParts = smsManager.divideMessage(message)
+                    val messageParts = smsManager.divideMessage(message).ifEmpty { arrayListOf(message) }
                     SmsSendRegistry.register(
                         callbackId = callbackId,
                         expectedParts = messageParts.size,

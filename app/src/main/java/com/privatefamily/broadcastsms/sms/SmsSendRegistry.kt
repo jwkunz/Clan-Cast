@@ -24,6 +24,10 @@ object SmsSendRegistry {
         callbacks.remove(callbackId)
     }
 
+    internal fun clearForTest() {
+        callbacks.clear()
+    }
+
     fun onPartResult(
         callbackId: String,
         resultCode: Int,
