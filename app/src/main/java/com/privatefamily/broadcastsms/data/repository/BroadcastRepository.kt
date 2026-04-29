@@ -8,8 +8,10 @@ import com.privatefamily.broadcastsms.data.model.BroadcastRecipientEntity
 import com.privatefamily.broadcastsms.data.model.BroadcastStatus
 import com.privatefamily.broadcastsms.data.model.RecipientStatus
 import androidx.room.withTransaction
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.flow.Flow
 import com.privatefamily.broadcastsms.domain.preflight.BroadcastSnapshotWriter
+import com.privatefamily.broadcastsms.permissions.AppPermission
 
 open class BroadcastRepository(
     private val database: AppDatabase,
@@ -22,6 +24,13 @@ open class BroadcastRepository(
 
     fun observeRecipients(broadcastId: String): Flow<List<BroadcastRecipientEntity>> =
         recipientDao.observeByBroadcastId(broadcastId)
+
+    suspend fun getBroadcast(broadcastId: String): BroadcastEntity? = broadcastDao.getById(broadcastId)
+
+    suspend fun getRecipients(broadcastId: String): List<BroadcastRecipientEntity> = recipientDao.getByBroadcastId(broadcastId)
+
+    suspend fun getNextPendingRecipient(broadcastId: String): BroadcastRecipientEntity? =
+        recipientDao.getPendingByBroadcastId(broadcastId).firstOrNull()
 
     suspend fun insertBroadcast(broadcast: BroadcastEntity) = broadcastDao.insert(broadcast)
 
@@ -54,5 +63,28 @@ open class BroadcastRepository(
             errorMessage = errorMessage,
             updatedAt = System.currentTimeMillis(),
         )
+    }
+
+    suspend fun markPendingRecipientsCancelled(broadcastId: String) {
+        recipientDao.markPendingAsCancelled(broadcastId, System.currentTimeMillis())
+    }
+
+    suspend fun refreshCounts(broadcastId: String) {
+        val recipients = recipientDao.getByBroadcastId(broadcastId)
+        broadcastDao.updateCounts(
+            broadcastId = broadcastId,
+            totalRecipients = recipients.size,
+            sentCount = recipients.count { it.status == RecipientStatus.SENT },
+            failedCount = recipients.count { it.status == RecipientStatus.FAILED },
+            cancelledCount = recipients.count { it.status == RecipientStatus.CANCELLED },
+            updatedAt = System.currentTimeMillis(),
+        )
+    }
+
+    fun hasSmsPermission(context: android.content.Context): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            AppPermission.SendSms.manifestValue,
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 }

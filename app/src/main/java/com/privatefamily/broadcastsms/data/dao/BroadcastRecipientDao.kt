@@ -16,6 +16,9 @@ interface BroadcastRecipientDao {
     @Query("SELECT * FROM broadcast_recipients WHERE broadcastId = :broadcastId ORDER BY createdAtEpochMillis ASC")
     fun observeByBroadcastId(broadcastId: String): Flow<List<BroadcastRecipientEntity>>
 
+    @Query("SELECT * FROM broadcast_recipients WHERE broadcastId = :broadcastId ORDER BY createdAtEpochMillis ASC")
+    suspend fun getByBroadcastId(broadcastId: String): List<BroadcastRecipientEntity>
+
     @Query("SELECT * FROM broadcast_recipients WHERE broadcastId = :broadcastId AND status = 'PENDING' ORDER BY createdAtEpochMillis ASC")
     suspend fun getPendingByBroadcastId(broadcastId: String): List<BroadcastRecipientEntity>
 
