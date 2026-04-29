@@ -19,6 +19,8 @@ data class ContactPickerUiState(
     val query: String = "",
     val isLoading: Boolean = false,
     val contacts: List<DeviceContact> = emptyList(),
+    val recentlyAddedKey: String? = null,
+    val acknowledgementMessage: String? = null,
 ) {
     val filteredContacts: List<DeviceContact>
         get() {
@@ -59,6 +61,7 @@ class ContactPickerViewModel(
 
     fun addContact(contact: DeviceContact, phoneIndex: Int) {
         val phone = contact.phoneNumbers.getOrNull(phoneIndex) ?: return
+        val addedKey = contact.contactId + ":" + (phone.phoneNumberId ?: phoneIndex.toString())
         viewModelScope.launch {
             val now = System.currentTimeMillis()
             distributionListRepository.addMember(
@@ -79,7 +82,17 @@ class ContactPickerViewModel(
                     updatedAtEpochMillis = now,
                 ),
             )
+            state.update {
+                it.copy(
+                    recentlyAddedKey = addedKey,
+                    acknowledgementMessage = "Added ${contact.displayName} - ${phone.number}",
+                )
+            }
         }
+    }
+
+    fun consumeAcknowledgement() {
+        state.update { it.copy(acknowledgementMessage = null) }
     }
 }
 

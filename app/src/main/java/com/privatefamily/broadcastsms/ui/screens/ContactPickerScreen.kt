@@ -15,12 +15,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -39,6 +42,7 @@ fun ContactPickerScreen(
     val context = LocalContext.current
     val activity = context as? Activity
     val permissionState = activity?.let { PermissionHelper.state(it, AppPermission.Contacts) }
+    val snackbarHostState = remember { SnackbarHostState() }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -53,7 +57,14 @@ fun ContactPickerScreen(
         }
     }
 
+    LaunchedEffect(uiState.acknowledgementMessage) {
+        val message = uiState.acknowledgementMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        viewModel.consumeAcknowledgement()
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Add Contact") },
@@ -99,11 +110,14 @@ fun ContactPickerScreen(
                         items(uiState.filteredContacts, key = { it.contactId }) { contact ->
                             SectionCard(title = contact.displayName) {
                                 contact.phoneNumbers.forEachIndexed { index, phone ->
+                                    val phoneKey = contact.contactId + ":" + (phone.phoneNumberId ?: index.toString())
+                                    val isRecentlyAdded = uiState.recentlyAddedKey == phoneKey
                                     Button(
                                         onClick = { viewModel.addContact(contact, index) },
                                         modifier = Modifier.fillMaxWidth(),
                                     ) {
-                                        Text("${phone.typeLabel ?: "Phone"}: ${phone.number}")
+                                        val prefix = if (isRecentlyAdded) "Added" else (phone.typeLabel ?: "Phone")
+                                        Text("$prefix: ${phone.number}")
                                     }
                                 }
                             }
