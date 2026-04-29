@@ -57,11 +57,11 @@ data class BroadcastDetailUiState(
     val completionSummary: String
         get() = when (broadcast?.status) {
             com.privatefamily.broadcastsms.data.model.BroadcastStatus.COMPLETED ->
-                "Completed: $sentCount sent, $failedCount failed."
+                "Completed: $sentCount delivered to the SMS app, $failedCount failed."
             com.privatefamily.broadcastsms.data.model.BroadcastStatus.CANCELLED ->
-                "Cancelled: $processedCount processed, $cancelledCount skipped."
+                "Cancelled: $processedCount already processed, $cancelledCount remaining recipient(s) skipped."
             com.privatefamily.broadcastsms.data.model.BroadcastStatus.FAILED ->
-                "Broadcast failed after $processedCount processed."
+                "Broadcast stopped unexpectedly after $processedCount processed recipient(s)."
             else -> ""
         }
 }

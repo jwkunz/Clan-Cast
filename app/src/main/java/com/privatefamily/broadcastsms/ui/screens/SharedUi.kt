@@ -10,6 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun SectionCard(
@@ -26,4 +29,9 @@ fun SectionCard(
             content()
         }
     }
+}
+
+fun formatTimestamp(epochMillis: Long): String {
+    val formatter = SimpleDateFormat("MMM d, yyyy h:mm a", Locale.US)
+    return formatter.format(Date(epochMillis))
 }

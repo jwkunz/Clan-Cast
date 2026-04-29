@@ -46,7 +46,13 @@ class BroadcastSendService : Service() {
             ACTION_START_BROADCAST -> {
                 if (broadcastId != null) {
                     activeBroadcastId = broadcastId
-                    startForeground(NOTIFICATION_ID, buildNotification("Starting broadcast"))
+                    startForeground(
+                        NOTIFICATION_ID,
+                        buildNotification(
+                            title = "Clan Cast Broadcast",
+                            message = "Preparing your broadcast",
+                        ),
+                    )
                     launchSendLoopIfNeeded(broadcastId) {
                         repository.updateStatus(broadcastId, BroadcastStatus.RUNNING)
                         runBroadcastLoop(broadcastId)
@@ -58,7 +64,10 @@ class BroadcastSendService : Service() {
                 if (broadcastId != null) {
                     serviceScope.launch {
                         repository.updateStatus(broadcastId, BroadcastStatus.PAUSED)
-                        updateNotification("Paused")
+                        updateNotification(
+                            title = "Clan Cast Broadcast Paused",
+                            message = "Broadcast paused. Resume when you're ready.",
+                        )
                     }
                 }
             }
@@ -66,7 +75,13 @@ class BroadcastSendService : Service() {
             ACTION_RESUME_BROADCAST -> {
                 if (broadcastId != null) {
                     activeBroadcastId = broadcastId
-                    startForeground(NOTIFICATION_ID, buildNotification("Resuming broadcast"))
+                    startForeground(
+                        NOTIFICATION_ID,
+                        buildNotification(
+                            title = "Clan Cast Broadcast",
+                            message = "Resuming with the next pending recipient",
+                        ),
+                    )
                     launchSendLoopIfNeeded(broadcastId) {
                         repository.updateStatus(broadcastId, BroadcastStatus.RUNNING)
                         runBroadcastLoop(broadcastId)
@@ -117,7 +132,11 @@ class BroadcastSendService : Service() {
         if (!repository.hasSmsPermission(this)) {
             repository.updateStatus(broadcastId, BroadcastStatus.FAILED)
             repository.refreshCounts(broadcastId)
-            updateNotification("SMS permission missing")
+            updateNotification(
+                title = "Clan Cast Broadcast Failed",
+                message = "SMS permission is missing.",
+                ongoing = false,
+            )
             stopSelf()
             return
         }
@@ -126,7 +145,14 @@ class BroadcastSendService : Service() {
             val broadcast = repository.getBroadcast(broadcastId) ?: break
             when (broadcast.status) {
                 BroadcastStatus.PAUSED -> {
-                    updateNotification(progressText(broadcast.sentCount, broadcast.totalRecipients, "Paused"))
+                    updateNotification(
+                        title = "Clan Cast Broadcast Paused",
+                        message = progressText(
+                            processedCount = broadcast.sentCount + broadcast.failedCount + broadcast.cancelledCount,
+                            totalCount = broadcast.totalRecipients,
+                            prefix = "Paused",
+                        ),
+                    )
                     delay(POLL_DELAY_MS)
                     continue
                 }
@@ -134,7 +160,11 @@ class BroadcastSendService : Service() {
                 BroadcastStatus.CANCELLED -> {
                     repository.markPendingRecipientsCancelled(broadcastId)
                     repository.refreshCounts(broadcastId)
-                    updateNotification(finalText("Cancelled", broadcastId))
+                    updateNotification(
+                        title = "Clan Cast Broadcast Cancelled",
+                        message = finalText("Cancelled", broadcastId),
+                        ongoing = false,
+                    )
                     activeBroadcastId = null
                     stopSelf()
                     return
@@ -153,17 +183,22 @@ class BroadcastSendService : Service() {
             if (nextRecipient == null) {
                 repository.refreshCounts(broadcastId)
                 repository.updateStatus(broadcastId, BroadcastStatus.COMPLETED)
-                updateNotification(finalText("Completed", broadcastId))
+                updateNotification(
+                    title = "Clan Cast Broadcast Complete",
+                    message = finalText("Completed", broadcastId),
+                    ongoing = false,
+                )
                 activeBroadcastId = null
                 stopSelf()
                 return
             }
 
             updateNotification(
-                progressText(
+                title = "Clan Cast Broadcast Sending",
+                message = progressText(
                     processedCount = broadcast.sentCount + broadcast.failedCount + broadcast.cancelledCount,
                     totalCount = broadcast.totalRecipients,
-                    prefix = "Running",
+                    prefix = "Progress",
                 ),
             )
 
@@ -183,17 +218,26 @@ class BroadcastSendService : Service() {
         }
     }
 
-    private fun updateNotification(message: String) {
+    private fun updateNotification(
+        title: String,
+        message: String,
+        ongoing: Boolean = true,
+    ) {
         val manager = getSystemService<NotificationManager>() ?: return
-        manager.notify(NOTIFICATION_ID, buildNotification(message))
+        manager.notify(NOTIFICATION_ID, buildNotification(title, message, ongoing))
     }
 
-    private fun buildNotification(message: String): Notification {
+    private fun buildNotification(
+        title: String,
+        message: String,
+        ongoing: Boolean = true,
+    ): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher_round)
-            .setContentTitle("Sending Broadcast")
+            .setContentTitle(title)
             .setContentText(message)
-            .setOngoing(true)
+            .setOngoing(ongoing)
+            .setAutoCancel(!ongoing)
             .build()
     }
 
@@ -209,7 +253,7 @@ class BroadcastSendService : Service() {
     }
 
     private fun progressText(processedCount: Int, totalCount: Int, prefix: String): String {
-        return "$prefix: $processedCount of $totalCount processed"
+        return "$prefix: $processedCount of $totalCount recipient(s) handled"
     }
 
     private suspend fun finalText(prefix: String, broadcastId: String): String {
