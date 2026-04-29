@@ -24,6 +24,8 @@ import com.privatefamily.broadcastsms.ui.viewmodel.ListDetailViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ListDetailViewModelFactory
 import com.privatefamily.broadcastsms.ui.viewmodel.ListsViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ListsViewModelFactory
+import com.privatefamily.broadcastsms.ui.viewmodel.PreflightViewModel
+import com.privatefamily.broadcastsms.ui.viewmodel.PreflightViewModelFactory
 import com.privatefamily.broadcastsms.ui.viewmodel.TemplatesViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.TemplatesViewModelFactory
 
@@ -102,6 +104,7 @@ fun ClanCastNavHost(
                 factory = ComposeBroadcastViewModelFactory(
                     distributionListRepository = container.distributionListRepository,
                     templateRepository = container.templateRepository,
+                    draftStore = container.broadcastDraftStore,
                 ),
             )
             ComposeBroadcastScreen(
@@ -111,7 +114,16 @@ fun ClanCastNavHost(
             )
         }
         composable(Routes.Preflight) {
-            PreflightScreen(onBack = { navController.popBackStack() })
+            val viewModel: PreflightViewModel = viewModel(
+                factory = PreflightViewModelFactory(
+                    draftStore = container.broadcastDraftStore,
+                    distributionListRepository = container.distributionListRepository,
+                ),
+            )
+            PreflightScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Routes.History) {
             HistoryScreen(onBack = { navController.popBackStack() })

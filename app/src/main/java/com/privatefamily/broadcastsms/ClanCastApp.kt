@@ -9,6 +9,7 @@ import com.privatefamily.broadcastsms.data.repository.BroadcastRepository
 import com.privatefamily.broadcastsms.data.repository.ContactRepository
 import com.privatefamily.broadcastsms.data.repository.DistributionListRepository
 import com.privatefamily.broadcastsms.data.repository.TemplateRepository
+import com.privatefamily.broadcastsms.domain.preflight.BroadcastDraftStore
 
 class ClanCastApp : Application() {
     lateinit var container: AppContainer
@@ -40,6 +41,7 @@ class ClanCastApp : Application() {
                     phoneNumberNormalizer = PhoneNumberNormalizer(),
                 ),
             ),
+            broadcastDraftStore = BroadcastDraftStore(),
         )
     }
 }
@@ -49,4 +51,5 @@ data class AppContainer(
     val templateRepository: TemplateRepository,
     val broadcastRepository: BroadcastRepository,
     val contactRepository: ContactRepository,
+    val broadcastDraftStore: BroadcastDraftStore,
 )

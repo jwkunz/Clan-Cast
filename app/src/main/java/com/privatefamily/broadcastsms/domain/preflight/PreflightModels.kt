@@ -41,6 +41,7 @@ data class MissingFieldIssue(
 
 data class PreflightResult(
     val totalEntries: Int,
+    val uniquePhoneNumberCount: Int,
     val validEntries: List<PreflightRecipient>,
     val duplicateIssues: List<DuplicateIssue>,
     val invalidNumberIssues: List<InvalidNumberIssue>,

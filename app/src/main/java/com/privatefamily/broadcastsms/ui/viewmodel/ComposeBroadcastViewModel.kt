@@ -9,6 +9,7 @@ import com.privatefamily.broadcastsms.data.model.MessageTemplateEntity
 import com.privatefamily.broadcastsms.data.repository.DistributionListRepository
 import com.privatefamily.broadcastsms.data.repository.TemplateRepository
 import com.privatefamily.broadcastsms.domain.preflight.BroadcastDraft
+import com.privatefamily.broadcastsms.domain.preflight.BroadcastDraftStore
 import com.privatefamily.broadcastsms.domain.template.TemplateParser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,9 +53,10 @@ data class ComposeBroadcastUiState(
 class ComposeBroadcastViewModel(
     private val distributionListRepository: DistributionListRepository,
     private val templateRepository: TemplateRepository,
+    private val draftStore: BroadcastDraftStore,
     private val templateParser: TemplateParser = TemplateParser(),
 ) : ViewModel() {
-    private val draft = MutableStateFlow(BroadcastDraft())
+    private val draft = draftStore.draft
 
     private val selectedMembers = draft.flatMapLatest { currentDraft ->
         currentDraft.distributionListId?.let(distributionListRepository::observeMembers)
@@ -83,11 +85,11 @@ class ComposeBroadcastViewModel(
     )
 
     fun selectList(listId: String) {
-        draft.update { it.copy(distributionListId = listId) }
+        draftStore.update { it.copy(distributionListId = listId) }
     }
 
     fun selectTemplate(template: MessageTemplateEntity?) {
-        draft.update {
+        draftStore.update {
             it.copy(
                 templateId = template?.id,
                 messageBody = template?.body ?: it.messageBody,
@@ -96,18 +98,20 @@ class ComposeBroadcastViewModel(
     }
 
     fun updateMessageBody(messageBody: String) {
-        draft.update { it.copy(messageBody = messageBody) }
+        draftStore.update { it.copy(messageBody = messageBody) }
     }
 }
 
 class ComposeBroadcastViewModelFactory(
     private val distributionListRepository: DistributionListRepository,
     private val templateRepository: TemplateRepository,
+    private val draftStore: BroadcastDraftStore,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return ComposeBroadcastViewModel(
             distributionListRepository = distributionListRepository,
             templateRepository = templateRepository,
+            draftStore = draftStore,
         ) as T
     }
 }
