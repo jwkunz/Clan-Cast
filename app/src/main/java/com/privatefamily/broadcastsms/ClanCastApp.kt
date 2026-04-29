@@ -10,10 +10,15 @@ import com.privatefamily.broadcastsms.data.repository.ContactRepository
 import com.privatefamily.broadcastsms.data.repository.DistributionListRepository
 import com.privatefamily.broadcastsms.data.repository.TemplateRepository
 import com.privatefamily.broadcastsms.domain.preflight.BroadcastDraftStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class ClanCastApp : Application() {
     lateinit var container: AppContainer
         private set
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
@@ -44,6 +49,10 @@ class ClanCastApp : Application() {
             ),
             broadcastDraftStore = BroadcastDraftStore(),
         )
+
+        appScope.launch {
+            container.broadcastRepository.recoverInterruptedBroadcasts()
+        }
     }
 }
 

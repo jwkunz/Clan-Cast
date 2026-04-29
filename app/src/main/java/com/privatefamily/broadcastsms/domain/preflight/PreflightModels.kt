@@ -6,6 +6,7 @@ import com.privatefamily.broadcastsms.data.model.InvalidNumberPolicy
 data class BroadcastDraft(
     val distributionListId: String? = null,
     val templateId: String? = null,
+    val broadcastName: String = "",
     val messageBody: String = "",
 )
 

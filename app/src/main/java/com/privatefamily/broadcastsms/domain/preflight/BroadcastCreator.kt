@@ -24,7 +24,7 @@ class BroadcastCreator(
         val invalidNumberPolicy = enumValueOf<com.privatefamily.broadcastsms.data.model.InvalidNumberPolicy>(invalidNumberPolicyName)
         val broadcast = BroadcastEntity(
             id = broadcastId,
-            name = "Broadcast - ${timestampLabel(now)}",
+            name = draft.broadcastName.trim().ifBlank { "Broadcast - ${timestampLabel(now)}" },
             distributionListId = draft.distributionListId.orEmpty(),
             sourceTemplateId = draft.templateId,
             messageBody = draft.messageBody,

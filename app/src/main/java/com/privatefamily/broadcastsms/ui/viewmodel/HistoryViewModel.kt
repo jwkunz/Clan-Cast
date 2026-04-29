@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class HistoryViewModel(
     private val repository: BroadcastRepository,
@@ -20,6 +21,18 @@ class HistoryViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList(),
     )
+
+    fun deleteBroadcast(broadcastId: String) {
+        viewModelScope.launch {
+            repository.deleteBroadcast(broadcastId)
+        }
+    }
+
+    fun deleteAllBroadcasts() {
+        viewModelScope.launch {
+            repository.deleteAllBroadcasts()
+        }
+    }
 }
 
 data class BroadcastDetailUiState(

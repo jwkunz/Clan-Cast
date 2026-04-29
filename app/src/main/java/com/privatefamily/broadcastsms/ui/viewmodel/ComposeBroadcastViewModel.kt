@@ -100,6 +100,10 @@ class ComposeBroadcastViewModel(
     fun updateMessageBody(messageBody: String) {
         draftStore.update { it.copy(messageBody = messageBody) }
     }
+
+    fun updateBroadcastName(broadcastName: String) {
+        draftStore.update { it.copy(broadcastName = broadcastName) }
+    }
 }
 
 class ComposeBroadcastViewModelFactory(

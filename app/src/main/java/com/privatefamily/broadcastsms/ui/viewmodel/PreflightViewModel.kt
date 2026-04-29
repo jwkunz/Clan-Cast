@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 
 data class PreflightUiState(
     val listId: String? = null,
+    val broadcastName: String = "",
     val messageBody: String = "",
     val duplicatePolicy: DuplicatePolicy? = null,
     val invalidNumberPolicy: InvalidNumberPolicy? = null,
@@ -90,6 +91,7 @@ class PreflightViewModel(
         val result = request?.let { validator.validate(it, members) }
         PreflightUiState(
             listId = draft.distributionListId,
+            broadcastName = draft.broadcastName,
             messageBody = draft.messageBody,
             duplicatePolicy = selectedPolicies.duplicatePolicy,
             invalidNumberPolicy = selectedPolicies.invalidNumberPolicy,

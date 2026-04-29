@@ -34,6 +34,13 @@ fun HistoryScreen(
                 navigationIcon = {
                     TextButton(onClick = onBack) { Text("Back") }
                 },
+                actions = {
+                    if (broadcasts.isNotEmpty()) {
+                        TextButton(onClick = viewModel::deleteAllBroadcasts) {
+                            Text("Clear All")
+                        }
+                    }
+                },
             )
         },
     ) { innerPadding ->
@@ -60,6 +67,12 @@ fun HistoryScreen(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Open Broadcast")
+                    }
+                    Button(
+                        onClick = { viewModel.deleteBroadcast(broadcast.id) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Delete Broadcast")
                     }
                 }
             }

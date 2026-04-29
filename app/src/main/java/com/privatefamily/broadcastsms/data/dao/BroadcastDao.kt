@@ -26,6 +26,15 @@ interface BroadcastDao {
     @Query("SELECT * FROM broadcasts WHERE id = :broadcastId LIMIT 1")
     suspend fun getById(broadcastId: String): BroadcastEntity?
 
+    @Query("DELETE FROM broadcasts WHERE id = :broadcastId")
+    suspend fun deleteById(broadcastId: String)
+
+    @Query("DELETE FROM broadcasts")
+    suspend fun deleteAll()
+
+    @Query("UPDATE broadcasts SET status = 'PAUSED', updatedAtEpochMillis = :updatedAt WHERE status = 'RUNNING'")
+    suspend fun pauseAllRunning(updatedAt: Long)
+
     @Query("UPDATE broadcasts SET status = :status, updatedAtEpochMillis = :updatedAt WHERE id = :broadcastId")
     suspend fun updateStatus(broadcastId: String, status: BroadcastStatus, updatedAt: Long)
 

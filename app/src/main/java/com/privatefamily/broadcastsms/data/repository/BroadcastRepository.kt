@@ -36,6 +36,14 @@ open class BroadcastRepository(
 
     suspend fun insertRecipients(recipients: List<BroadcastRecipientEntity>) = recipientDao.insertAll(recipients)
 
+    suspend fun deleteBroadcast(broadcastId: String) {
+        broadcastDao.deleteById(broadcastId)
+    }
+
+    suspend fun deleteAllBroadcasts() {
+        broadcastDao.deleteAll()
+    }
+
     override suspend fun createBroadcastSnapshot(
         broadcast: BroadcastEntity,
         recipients: List<BroadcastRecipientEntity>,
@@ -86,5 +94,9 @@ open class BroadcastRepository(
             context,
             AppPermission.SendSms.manifestValue,
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+    }
+
+    suspend fun recoverInterruptedBroadcasts() {
+        broadcastDao.pauseAllRunning(System.currentTimeMillis())
     }
 }

@@ -58,6 +58,7 @@ fun PreflightScreen(
         ) {
             item {
                 SectionCard(title = "Summary") {
+                    Text("Broadcast name: ${uiState.broadcastName.ifBlank { "Broadcast - YYYY-MM-DD HH:mm" }}")
                     Text("Total entries: ${result?.totalEntries ?: 0}")
                     Text("Unique normalized numbers: ${result?.uniquePhoneNumberCount ?: 0}")
                     Text("Ready recipients after policies: ${result?.validEntries?.size ?: 0}")

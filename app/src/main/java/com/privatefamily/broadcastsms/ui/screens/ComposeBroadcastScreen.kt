@@ -75,6 +75,19 @@ fun ComposeBroadcastScreen(
                 }
             }
             item {
+                SectionCard(title = "Broadcast Name") {
+                    OutlinedTextField(
+                        value = uiState.draft.broadcastName,
+                        onValueChange = viewModel::updateBroadcastName,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Optional custom name") },
+                        supportingText = {
+                            Text("Leave blank to use the default timestamped broadcast name.")
+                        },
+                    )
+                }
+            }
+            item {
                 SectionCard(title = "Message Body") {
                     OutlinedTextField(
                         value = uiState.draft.messageBody,
@@ -96,6 +109,11 @@ fun ComposeBroadcastScreen(
                     }
                     Text("Selected recipients: ${uiState.selectedListMemberCount}")
                     Text("Selected template: ${uiState.selectedTemplate?.name ?: "None"}")
+                    Text(
+                        "Broadcast name: ${
+                            uiState.draft.broadcastName.ifBlank { "Broadcast - YYYY-MM-DD HH:mm" }
+                        }",
+                    )
                     Button(
                         onClick = onContinueToPreflight,
                         enabled = uiState.canContinueToPreflight,
