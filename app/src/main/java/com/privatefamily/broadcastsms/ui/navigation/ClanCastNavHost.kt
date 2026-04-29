@@ -17,6 +17,8 @@ import com.privatefamily.broadcastsms.ui.screens.ListsScreen
 import com.privatefamily.broadcastsms.ui.screens.TemplatesScreen
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModelFactory
+import com.privatefamily.broadcastsms.ui.viewmodel.ComposeBroadcastViewModel
+import com.privatefamily.broadcastsms.ui.viewmodel.ComposeBroadcastViewModelFactory
 import com.privatefamily.broadcastsms.ui.viewmodel.ListDetailViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ListDetailViewModelFactory
 import com.privatefamily.broadcastsms.ui.viewmodel.ListsViewModel
@@ -95,7 +97,16 @@ fun ClanCastNavHost(
             )
         }
         composable(Routes.ComposeBroadcast) {
-            ComposeBroadcastScreen(onBack = { navController.popBackStack() })
+            val viewModel: ComposeBroadcastViewModel = viewModel(
+                factory = ComposeBroadcastViewModelFactory(
+                    distributionListRepository = container.distributionListRepository,
+                    templateRepository = container.templateRepository,
+                ),
+            )
+            ComposeBroadcastScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Routes.History) {
             HistoryScreen(onBack = { navController.popBackStack() })
