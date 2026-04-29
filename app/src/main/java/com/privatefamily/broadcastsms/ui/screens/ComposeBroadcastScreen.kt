@@ -25,6 +25,7 @@ import com.privatefamily.broadcastsms.ui.viewmodel.ComposeBroadcastViewModel
 fun ComposeBroadcastScreen(
     viewModel: ComposeBroadcastViewModel,
     onBack: () -> Unit,
+    onContinueToPreflight: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
@@ -96,11 +97,11 @@ fun ComposeBroadcastScreen(
                     Text("Selected recipients: ${uiState.selectedListMemberCount}")
                     Text("Selected template: ${uiState.selectedTemplate?.name ?: "None"}")
                     Button(
-                        onClick = { },
+                        onClick = onContinueToPreflight,
                         enabled = uiState.canContinueToPreflight,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Preflight Screen Coming Next")
+                        Text("Continue To Preflight")
                     }
                 }
             }

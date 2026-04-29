@@ -14,6 +14,7 @@ import com.privatefamily.broadcastsms.ui.screens.HistoryScreen
 import com.privatefamily.broadcastsms.ui.screens.HomeScreen
 import com.privatefamily.broadcastsms.ui.screens.ListDetailScreen
 import com.privatefamily.broadcastsms.ui.screens.ListsScreen
+import com.privatefamily.broadcastsms.ui.screens.PreflightScreen
 import com.privatefamily.broadcastsms.ui.screens.TemplatesScreen
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModelFactory
@@ -106,7 +107,11 @@ fun ClanCastNavHost(
             ComposeBroadcastScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
+                onContinueToPreflight = { navController.navigate(Routes.Preflight) },
             )
+        }
+        composable(Routes.Preflight) {
+            PreflightScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.History) {
             HistoryScreen(onBack = { navController.popBackStack() })
