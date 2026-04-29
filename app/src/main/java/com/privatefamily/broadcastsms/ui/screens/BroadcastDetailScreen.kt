@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -68,8 +69,19 @@ fun BroadcastDetailScreen(
                     Text("Status: ${broadcast?.status ?: "Unknown"}")
                     Text("Message body: ${broadcast?.messageBody.orEmpty()}")
                     Text("Recipients: ${broadcast?.totalRecipients ?: 0}")
+                    Text("Processed: ${uiState.processedCount}")
+                    Text("Pending: ${uiState.pendingCount}")
+                    Text("Sent: ${uiState.sentCount}")
+                    Text("Failed: ${uiState.failedCount}")
+                    Text("Cancelled: ${uiState.cancelledCount}")
                     Text("Duplicate policy: ${broadcast?.duplicatePolicy ?: "Unknown"}")
                     Text("Invalid number policy: ${broadcast?.invalidNumberPolicy ?: "Unknown"}")
+                    if (uiState.completionSummary.isNotBlank()) {
+                        Text(
+                            text = uiState.completionSummary,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                     when (broadcast?.status) {
                         BroadcastStatus.PENDING -> {
                             Button(
@@ -135,7 +147,12 @@ fun BroadcastDetailScreen(
                 SectionCard(title = recipient.displayName) {
                     Text(recipient.phoneNumber)
                     Text("Status: ${recipient.status}")
-                    recipient.errorMessage?.let { Text("Error: $it") }
+                    recipient.errorMessage?.let {
+                        Text(
+                            text = "Error: $it",
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                     Text(recipient.renderedMessage)
                 }
             }

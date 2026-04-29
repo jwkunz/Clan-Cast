@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.privatefamily.broadcastsms.data.model.BroadcastEntity
 import com.privatefamily.broadcastsms.data.model.BroadcastRecipientEntity
+import com.privatefamily.broadcastsms.data.model.RecipientStatus
 import com.privatefamily.broadcastsms.data.repository.BroadcastRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,33 @@ class HistoryViewModel(
 data class BroadcastDetailUiState(
     val broadcast: BroadcastEntity? = null,
     val recipients: List<BroadcastRecipientEntity> = emptyList(),
-)
+) {
+    val sentCount: Int
+        get() = recipients.count { it.status == RecipientStatus.SENT }
+
+    val failedCount: Int
+        get() = recipients.count { it.status == RecipientStatus.FAILED }
+
+    val cancelledCount: Int
+        get() = recipients.count { it.status == RecipientStatus.CANCELLED }
+
+    val pendingCount: Int
+        get() = recipients.count { it.status == RecipientStatus.PENDING }
+
+    val processedCount: Int
+        get() = sentCount + failedCount + cancelledCount
+
+    val completionSummary: String
+        get() = when (broadcast?.status) {
+            com.privatefamily.broadcastsms.data.model.BroadcastStatus.COMPLETED ->
+                "Completed: $sentCount sent, $failedCount failed."
+            com.privatefamily.broadcastsms.data.model.BroadcastStatus.CANCELLED ->
+                "Cancelled: $processedCount processed, $cancelledCount skipped."
+            com.privatefamily.broadcastsms.data.model.BroadcastStatus.FAILED ->
+                "Broadcast failed after $processedCount processed."
+            else -> ""
+        }
+}
 
 class BroadcastDetailViewModel(
     broadcastId: String,

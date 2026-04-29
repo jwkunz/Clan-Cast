@@ -13,8 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.privatefamily.broadcastsms.ui.theme.Ink
-import com.privatefamily.broadcastsms.ui.theme.Sand
+import com.privatefamily.broadcastsms.ui.theme.LogoGreen
+import com.privatefamily.broadcastsms.ui.theme.LogoNavy
+import com.privatefamily.broadcastsms.ui.theme.LogoSky
 
 @Composable
 fun HomeScreen(
@@ -27,7 +28,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(LogoNavy)
                 .padding(innerPadding)
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -35,12 +36,12 @@ fun HomeScreen(
             Text(
                 text = "Clan Cast",
                 style = MaterialTheme.typography.headlineMedium,
-                color = Ink,
+                color = MaterialTheme.colorScheme.onBackground,
             )
             Text(
                 text = "Private family SMS broadcasts with reusable lists, templates, and a controlled send flow.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.92f),
             )
             Button(onClick = onOpenLists, modifier = Modifier.fillMaxWidth()) {
                 Text("Manage Distribution Lists")
@@ -57,7 +58,12 @@ fun HomeScreen(
             Text(
                 text = "Current build focus: data layer, contacts, list editing, and template management.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Sand.copy(alpha = 0.95f),
+                color = LogoSky.copy(alpha = 0.95f),
+            )
+            Text(
+                text = "Connect • Share • Stay Close",
+                style = MaterialTheme.typography.bodyMedium,
+                color = LogoGreen,
             )
         }
     }

@@ -20,6 +20,7 @@ import com.privatefamily.broadcastsms.sms.AndroidSmsSender
 import com.privatefamily.broadcastsms.sms.SmsSender
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -31,6 +32,7 @@ class BroadcastSendService : Service() {
     private val repository by lazy { (application as ClanCastApp).container.broadcastRepository }
     private lateinit var smsSender: SmsSender
     private var activeBroadcastId: String? = null
+    private var sendLoopJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -45,7 +47,7 @@ class BroadcastSendService : Service() {
                 if (broadcastId != null) {
                     activeBroadcastId = broadcastId
                     startForeground(NOTIFICATION_ID, buildNotification("Starting broadcast"))
-                    serviceScope.launch {
+                    launchSendLoopIfNeeded(broadcastId) {
                         repository.updateStatus(broadcastId, BroadcastStatus.RUNNING)
                         runBroadcastLoop(broadcastId)
                     }
@@ -65,7 +67,7 @@ class BroadcastSendService : Service() {
                 if (broadcastId != null) {
                     activeBroadcastId = broadcastId
                     startForeground(NOTIFICATION_ID, buildNotification("Resuming broadcast"))
-                    serviceScope.launch {
+                    launchSendLoopIfNeeded(broadcastId) {
                         repository.updateStatus(broadcastId, BroadcastStatus.RUNNING)
                         runBroadcastLoop(broadcastId)
                     }
@@ -87,13 +89,34 @@ class BroadcastSendService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        sendLoopJob?.cancel()
         serviceScope.cancel()
         super.onDestroy()
+    }
+
+    private fun launchSendLoopIfNeeded(
+        broadcastId: String,
+        block: suspend () -> Unit,
+    ) {
+        if (activeBroadcastId == broadcastId && sendLoopJob?.isActive == true) {
+            return
+        }
+        sendLoopJob?.cancel()
+        sendLoopJob = serviceScope.launch {
+            try {
+                block()
+            } finally {
+                if (activeBroadcastId == broadcastId) {
+                    sendLoopJob = null
+                }
+            }
+        }
     }
 
     private suspend fun runBroadcastLoop(broadcastId: String) {
         if (!repository.hasSmsPermission(this)) {
             repository.updateStatus(broadcastId, BroadcastStatus.FAILED)
+            repository.refreshCounts(broadcastId)
             updateNotification("SMS permission missing")
             stopSelf()
             return
@@ -111,7 +134,8 @@ class BroadcastSendService : Service() {
                 BroadcastStatus.CANCELLED -> {
                     repository.markPendingRecipientsCancelled(broadcastId)
                     repository.refreshCounts(broadcastId)
-                    updateNotification("Cancelled")
+                    updateNotification(finalText("Cancelled", broadcastId))
+                    activeBroadcastId = null
                     stopSelf()
                     return
                 }
@@ -119,6 +143,7 @@ class BroadcastSendService : Service() {
                 BroadcastStatus.RUNNING -> Unit
                 BroadcastStatus.PENDING -> repository.updateStatus(broadcastId, BroadcastStatus.RUNNING)
                 BroadcastStatus.COMPLETED, BroadcastStatus.FAILED -> {
+                    activeBroadcastId = null
                     stopSelf()
                     return
                 }
@@ -128,7 +153,8 @@ class BroadcastSendService : Service() {
             if (nextRecipient == null) {
                 repository.refreshCounts(broadcastId)
                 repository.updateStatus(broadcastId, BroadcastStatus.COMPLETED)
-                updateNotification("Completed")
+                updateNotification(finalText("Completed", broadcastId))
+                activeBroadcastId = null
                 stopSelf()
                 return
             }
@@ -184,6 +210,14 @@ class BroadcastSendService : Service() {
 
     private fun progressText(processedCount: Int, totalCount: Int, prefix: String): String {
         return "$prefix: $processedCount of $totalCount processed"
+    }
+
+    private suspend fun finalText(prefix: String, broadcastId: String): String {
+        val recipients = repository.getRecipients(broadcastId)
+        val sent = recipients.count { it.status == RecipientStatus.SENT }
+        val failed = recipients.count { it.status == RecipientStatus.FAILED }
+        val cancelled = recipients.count { it.status == RecipientStatus.CANCELLED }
+        return "$prefix: $sent sent, $failed failed, $cancelled cancelled"
     }
 
     companion object {
