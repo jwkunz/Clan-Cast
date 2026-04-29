@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 data class ComposeBroadcastUiState(
     val draft: BroadcastDraft = BroadcastDraft(),
@@ -47,6 +48,7 @@ data class ComposeBroadcastUiState(
         get() = validationIssues.isEmpty()
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ComposeBroadcastViewModel(
     private val distributionListRepository: DistributionListRepository,
     private val templateRepository: TemplateRepository,

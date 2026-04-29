@@ -3,9 +3,9 @@ package com.privatefamily.broadcastsms.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.privatefamily.broadcastsms.AppContainer
 import com.privatefamily.broadcastsms.ui.screens.ComposeBroadcastScreen
