@@ -56,7 +56,7 @@ fun HomeScreen(
                 Text("Broadcast History")
             }
             Text(
-                text = "Current build focus: data layer, contacts, list editing, and template management.",
+                text = "Review recipients, preview every message, and send with pause, resume, and history controls.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = LogoSky.copy(alpha = 0.95f),
             )

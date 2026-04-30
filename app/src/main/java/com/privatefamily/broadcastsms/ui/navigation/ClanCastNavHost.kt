@@ -16,6 +16,7 @@ import com.privatefamily.broadcastsms.ui.screens.HomeScreen
 import com.privatefamily.broadcastsms.ui.screens.ListDetailScreen
 import com.privatefamily.broadcastsms.ui.screens.ListsScreen
 import com.privatefamily.broadcastsms.ui.screens.PreflightScreen
+import com.privatefamily.broadcastsms.ui.screens.SplashScreen
 import com.privatefamily.broadcastsms.ui.screens.TemplatesScreen
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModel
 import com.privatefamily.broadcastsms.ui.viewmodel.ContactPickerViewModelFactory
@@ -41,8 +42,19 @@ fun ClanCastNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Routes.Home,
+        startDestination = Routes.Splash,
     ) {
+        composable(Routes.Splash) {
+            SplashScreen(
+                onContinue = {
+                    navController.navigate(Routes.Home) {
+                        popUpTo(Routes.Splash) {
+                            inclusive = true
+                        }
+                    }
+                },
+            )
+        }
         composable(Routes.Home) {
             HomeScreen(
                 onOpenLists = { navController.navigate(Routes.Lists) },
