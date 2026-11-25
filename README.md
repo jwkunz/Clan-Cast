@@ -85,6 +85,14 @@ contacts.
 
 If a permission is denied, the app explains what is missing and offers a way to grant it.
 
+## Install
+
+Clan Cast isn't on the Play Store. Each [GitHub release](https://github.com/jwkunz/Clan-Cast/releases/latest)
+includes a debug APK, `clan-cast-vX.Y.Z-debug.apk`. Download it on your phone and tap it to install.
+Android asks permission to install from your browser or file manager the first time, which is normal
+for any app installed outside the Play Store. These are unsigned-by-you debug builds, so updating
+from one build source to another may require uninstalling first.
+
 ## Building
 
 Requirements: Android Studio, or the Android SDK with a JDK. The app supports Android 8.0 (API 26)
@@ -98,6 +106,24 @@ and later.
 
 The app is distributed by sideloading an APK and is not published on Google Play. Updates are
 installed manually.
+
+## CI and releases
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on pushes to `master`, tags and pull
+requests. It checks that the version files agree, runs the unit tests, and builds the debug APK
+(uploaded as a workflow artifact). Pushing a `v*` tag also publishes a GitHub release with the APK.
+
+The version lives in one file, `VERSION`. The Android `versionName` and `versionCode`
+(`major*10000 + minor*100 + patch`) are derived from it.
+
+```sh
+node scripts/version.mjs set 1.0.2    # change the version
+node scripts/version.mjs check        # verify everything agrees
+git tag v1.0.2 && git push origin v1.0.2
+```
+
+CI refuses to release if the tag doesn't match `VERSION`. Update `CHANGELOG.md` before tagging. The
+APK is a debug build; a Play Store upload would need a signed release build, which isn't set up.
 
 ## Tech stack
 
