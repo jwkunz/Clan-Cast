@@ -61,3 +61,11 @@ jobs:
           mv artifacts/clan-cast-debug.apk "clan-cast-$TAG-debug.apk"
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "Clan Cast $TAG" --generate-notes \
             "clan-cast-$TAG-debug.apk#Clan Cast (Android debug APK)"
+      - name: Remove prior releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq '.[].tagName' |
+            grep -vx "$TAG" |
+            while read -r old; do gh release delete "$old" --repo "$GITHUB_REPOSITORY" --yes; done || true

@@ -111,7 +111,7 @@ installed manually.
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on pushes to `master`, tags and pull
 requests. It checks that the version files agree, runs the unit tests, and builds the debug APK
-(uploaded as a workflow artifact). Pushing a `v*` tag also publishes a GitHub release with the APK.
+(uploaded as a workflow artifact). Pushing a `v*` tag also publishes a GitHub release with the APK and deletes all earlier releases (the git tags stay).
 
 The version lives in one file, `VERSION`. The Android `versionName` and `versionCode`
 (`major*10000 + minor*100 + patch`) are derived from it.
@@ -148,4 +148,4 @@ apply to the messages it sends.
 
 ---
 
-Copyright 2026 Numerius Engineering LLC. Current version: 1.0.1.
+Copyright 2026 Numerius Engineering LLC. Current version: 1.0.2.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 - 2026-11-24
+
+- Modernized the build (Gradle 9.5, AGP 9.3, Kotlin 2.2) with a single `VERSION` file.
+- Added GitHub Actions CI that runs the unit tests and publishes a debug APK release on each version tag.
+
 ## 1.0.1 - 2026-04-29
 
 - Added a branded launch splash screen using the Clan Cast logo.
